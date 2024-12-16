@@ -1,27 +1,29 @@
+
 import useCorrencyInfo from "./Hooks/useCorrencyInfo";
 import InputBox from "./components/InputBox";
 import "./App.css";
 import { useState } from "react";
 
 function App() {
-  const [amount, setAmount] = useState(); // to store the amount form input
-  const [from, setFrom] = useState("usd"); // store the option that user selects for convertion
-  const [to, setTo] = useState("inr"); // store the option that user selects To convertion
-  const [convertedAmount, setConvertedAmount] = useState(0); // here is the converted amount stored
+  const [amount, setAmount] = useState(0); // Initialize with 0
+  const [from, setFrom] = useState("usd");
+  const [to, setTo] = useState("inr");
+  const [convertedAmount, setConvertedAmount] = useState(0);
 
-  const currencyInfo = useCorrencyInfo(from); // currencyInfo stores the data that bring by the custom hook useCorrencyInfo
-
-  const options = Object.keys(currencyInfo); //stores the options from objects
+  const currencyInfo = useCorrencyInfo(from);
+  const options = Object.keys(currencyInfo);
 
   const swap = () => {
-    //swap method swaps the input section acording to user
     setFrom(to);
     setTo(from);
-    setConvertedAmount(amount);
-    setAmount(convertedAmount);
+    setConvertedAmount(Number(amount) || 0);
+    setAmount(Number(convertedAmount) || 0);
   };
 
-  const convert = () => setConvertedAmount(amount * currencyInfo[to]); // convert the amount
+  const convert = () => {
+    const rate = currencyInfo[to];
+    setConvertedAmount(rate ? amount * rate : 0); // Prevent NaN if rate is undefined
+  };
 
   return (
     <div
@@ -43,8 +45,8 @@ function App() {
                 label="From"
                 amount={amount}
                 currencyOptions={options}
-                onCurrencyChange={(currency) => setAmount(amount)}
-                onAmountChange={(amount) => setAmount(amount)}
+                onCurrencyChange={(currency) => setFrom(currency)}
+                onAmountChange={(value) => setAmount(value)}
                 selectCurrency={from}
               />
             </div>
@@ -54,7 +56,7 @@ function App() {
                 onClick={swap}
                 className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-white rounded-md bg-blue-600 text-white px-2 py-0.5"
               >
-                swap
+                Swap
               </button>
             </div>
             <div className="w-full mt-1 mb-4">
@@ -63,22 +65,21 @@ function App() {
                 amount={convertedAmount}
                 currencyOptions={options}
                 onCurrencyChange={(currency) => setTo(currency)}
-                selectCurrency={from}
-                amountDisable // by refault its true
+                selectCurrency={to}
+                amountDisable
               />
             </div>
             <button
               type="submit"
               className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg"
             >
-              Convert {typeof from === "string" ? from.toUpperCase() : ""} to {typeof to === "string" ? to.toUpperCase() : ""}
+              Convert {from.toUpperCase()} to {to.toUpperCase()}
             </button>
           </form>
         </div>
       </div>
     </div>
   );
-  f;
 }
 
 export default App;
